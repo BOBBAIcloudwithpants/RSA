@@ -257,12 +257,16 @@ Node * minus_list(Node * l1, Node * l2) {
         }
         while (s) {
             int temp = s->val + c1;
-            if (temp) {
-                c->next = init(temp % 10);
+            if(temp < 0) {
+                temp += 10;
+                c1 = -1;
+                
+            } else {
                 c1 = 0;
-                c = c->next;
-                s = s->next;
             }
+            c->next = init(temp % 10);
+            c = c->next;
+            s = s->next;
         }
     
     Node * rev = reverse(p3);
@@ -424,6 +428,7 @@ int short_div(Node * a, Node * b) {
         list_free(temp);
     }
     
+    list_free(c);
     return out;
 }
 
@@ -465,8 +470,10 @@ Node * divide(Node * a, Node * b) {
     // 将子串与b做除法
     int o1 = short_div(first_num, b);
     
+    Node * bo1 = product_with_single_num(b, o1);
     // 得到余数
-    Node * rest = minus_list(first_num, product_with_single_num(b, o1));
+    Node * rest = minus_list(first_num, bo1);
+    
     
     // 将得到的结果放在outcome中
     Node* sd1 = convert_int_to_list(o1);
@@ -484,17 +491,37 @@ Node * divide(Node * a, Node * b) {
     Node * copy_e = copy_after(a, idx);
     Node * end_res = end(rest);
     end_res->next = copy_e->next;
-    free(copy_e);
     
-    remove_extra_0(rest);
+    if(rest && rest->next->val == 0) {
+        remove_by_index(rest, 0);
+    }
     
-    // 递归调用divide, 将得到的结果与当前 outcome 进行拼接
-    Node * sub_outcome = divide(rest, b);
-    Node * end_out = end(outcome);
-    end_out->next = sub_outcome->next;
-    free(sub_outcome);
-    remove_extra_0(outcome);
-    return outcome;
+    Node * next_sub = rest;
+    rest = rest->next;
+    free(next_sub);
+    next_sub = init(-1);
+    
+    list_free(first_num);
+    list_free(bo1);
+    
+    while(rest && rest->val == 0) {
+        Node * p = rest;
+        rest = rest->next;
+        free(p);
+        push_val(outcome, 0);
+    }
+    if(rest == NULL) {
+        
+        return outcome;
+    } else {
+        next_sub->next = rest;
+        // 递归调用divide, 将得到的结果与当前 outcome 进行拼接
+        Node * sub_outcome = divide(next_sub, b);
+        Node * end_out = end(outcome);
+        end_out->next = sub_outcome->next;
+        remove_extra_0(outcome);
+        return outcome;
+    }
 }
 
 
@@ -726,8 +753,8 @@ long long GetInt(Int * a) {
 
 
 void test_Int() {
-    Int * a = Convert(144444);
-    Int * b = Convert(123234);
+    Int * a = Convert(67000);
+    Int * b = Convert(256);
     
     printf("a: ");
     Print(a);
@@ -753,7 +780,7 @@ void test_Int() {
     Print(Mod(a, b));
     
     printf("\n a ^ a: ");
-    Print(Power(a, 500));
+    Print(FastPower(a, Convert(200)));
 
 }
 
@@ -980,10 +1007,13 @@ OctetString * Encryption(Int * n, Int * e, OctetString * M) {
     
     Int * m = OS2IP(EM);
     
+    Int * c = RSAEP(n, e, m);
+    if (c->isError) {
+        Octet_assignDescription(C, "message representative out of range");
+        return C;
+    }
     
-    
-    
-    
+    C = I2OSP(c, k);
     return C;
 }
 
@@ -1009,9 +1039,16 @@ void test_OS2IP () {
     Print(j);
 }
 
+void test_EME() {
+    Int * i = Convert(67000);
+    OctetString * array = I2OSP(i, 3);
+    Octet_print(array);
+    OctetString * pad = EME_Encoding(array, 17);
+    Octet_print(pad);
+}
 
 
 
 int main(int argc, const char * argv[]) {
-    test_Int();
+    
 }
