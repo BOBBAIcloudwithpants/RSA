@@ -433,8 +433,9 @@ int short_div(Node * a, Node * b) {
 }
 
 // a/b, 支持较大的长度范围
-Node * divide(Node * a, Node * b) {
+Node * divide(Node * a, Node * b, int start) {
     Node * outcome = init(-1);
+    Node * p_out = outcome;
     
 //    // 若 a < b, 直接返回0
     if(compare(a, b) == -1) {
@@ -447,9 +448,14 @@ Node * divide(Node * a, Node * b) {
         outcome->next = init(1);
         return outcome;
     }
+
+    if(size(a)<=start) {
+        outcome->next = init(0);
+        return outcome;
+    }
     
     // 否则，开始计算
-    int idx = 0;
+    int idx = start;
     Node * first_num = sub_list(a, idx);
     
     
@@ -460,6 +466,8 @@ Node * divide(Node * a, Node * b) {
         list_free(first_num);
         first_num = sub_list(a, idx);
         p = p->next;
+        p_out->next = init(0);
+        p_out = p_out->next;
     }
     
     if(size(first_num) == 0) {
@@ -474,10 +482,16 @@ Node * divide(Node * a, Node * b) {
     // 得到余数
     Node * rest = minus_list(first_num, bo1);
     
+    if (rest && rest->next && rest->next->val == 0) {
+        start = 0;
+    } else {
+        start = size(rest);
+    }
     
     // 将得到的结果放在outcome中
     Node* sd1 = convert_int_to_list(o1);
-    insert_sublist_by_index(outcome, sd1, 0);
+    p_out->next = sd1->next;
+    
     
     
     // 得到拼接得到下一次做除法的被除数
@@ -492,6 +506,7 @@ Node * divide(Node * a, Node * b) {
     Node * end_res = end(rest);
     end_res->next = copy_e->next;
     
+    // 如果此时余数为0
     if(rest && rest->next->val == 0) {
         remove_by_index(rest, 0);
     }
@@ -510,16 +525,17 @@ Node * divide(Node * a, Node * b) {
         free(p);
         push_val(outcome, 0);
     }
+    
     if(rest == NULL) {
         
         return outcome;
     } else {
         next_sub->next = rest;
         // 递归调用divide, 将得到的结果与当前 outcome 进行拼接
-        Node * sub_outcome = divide(next_sub, b);
+        Node * sub_outcome = divide(next_sub, b, start);
         Node * end_out = end(outcome);
         end_out->next = sub_outcome->next;
-        remove_extra_0(outcome);
+//        remove_extra_0(outcome);
         return outcome;
     }
 }
@@ -528,7 +544,7 @@ Node * divide(Node * a, Node * b) {
 
 // c = a mod b
 Node * mod(Node * a, Node * b) {
-    Node * div = divide(a, b);
+    Node * div = divide(a, b, 0);
     return minus_list(a, product(b, div));
 }
 
@@ -558,8 +574,6 @@ Integer power_of(Integer x, int times) {
     4. Div
     5. Mod
     6. Compare
-    
- 
 */
 typedef struct {
     
@@ -614,13 +628,16 @@ Int * Product_with_num(Int * a, int num) {
 
 Int * Div(Int * a, Int * b) {
     Int * ret = Int_init();
-    Int_set_list(ret, divide(Int_get_list(a), Int_get_list(b)));
+    Node * out = divide(Int_get_list(a), Int_get_list(b), 0);
+    remove_extra_0(out);
+    Int_set_list(ret, out);
     return ret;
 }
 
 int Size(Int * a) {
     return size(Int_get_list(a));
 }
+
 
 // 只适用于比较小的整数
 Int * Convert(long long num) {
@@ -629,6 +646,8 @@ Int * Convert(long long num) {
     
     return ret;
 }
+
+
 Int * Mod(Int * a, Int * b) {
     Int * ret = Int_init();
     Int_set_list(ret, mod(Int_get_list(a), Int_get_list(b)));
@@ -735,6 +754,7 @@ Int * FastPower(Int * a, Int * times) {
 }
 
 
+
 // 将 Int 转换为 long long
 long long GetInt(Int * a) {
     
@@ -749,12 +769,35 @@ long long GetInt(Int * a) {
     return ret;
 }
 
+// 求这个整数在字节串下的长度
+int Octet_Size(Int *x)
+{
+  Int * zero = Convert(0);
+  Int * base256 = Convert(256);
+  int ret = 0;
+  Int * a = Copy(x);
+  
+    if (Compare(a, zero) == 0) {
+        free(a);
+        return 1;
+    }
 
+  while (Compare(a, zero) != 0)
+  {
+      Print(a);
+    ret++;
+    Int *t = a;
+    a = Div(a, base256);
+      
+    Free(t);
+  }
+  return ret;
+}
 
 
 void test_Int() {
-    Int * a = Convert(67000);
-    Int * b = Convert(256);
+    Int * a = Convert(24);
+    Int * b = Convert(20);
     
     printf("a: ");
     Print(a);
@@ -778,9 +821,12 @@ void test_Int() {
     
     printf("\n a mod b: ");
     Print(Mod(a, b));
-    
+
     printf("\n a ^ a: ");
     Print(FastPower(a, Convert(200)));
+    
+    printf("\n octet_size a: %d", Octet_Size(a));
+    
 
 }
 
@@ -917,6 +963,7 @@ OctetString * EME_Encoding(OctetString * M, int k) {
     
     OctetString * EM = Octet_init(k);
     
+    
     if (M->len > k-11) {
         Octet_assignDescription(EM, "message too long");
         return EM;
@@ -947,7 +994,7 @@ OctetString * I2OSP( Int * x, int x_len) {
     
     Int * base256 = Convert(256);
     Int * zero = Convert(0);
-    if (Compare(x, Power(base256, x_len)) >= 0) {
+    if (Compare(x, FastPower(base256, Convert(x_len))) >= 0) {
         Octet_assignDescription(array, "integer too large\n");
         return array;
     }
@@ -995,10 +1042,24 @@ Int * OS2IP (OctetString * array) {
 
 // (e, n) 为 接收者的 public key
 OctetString * Encryption(Int * n, Int * e, OctetString * M) {
-    int k = Size(n);
+    int k = Octet_Size(n);
+    printf("k: %d\n", k);
+    
+    printf("n: ");
+    Print(n);
+    
+    printf("e: ");
+    Print(e);
+    
+    printf("M: ");
+    Octet_print(M);
     OctetString * C = Octet_init(k);
     
+    
     OctetString * EM = EME_Encoding(M, k);
+    
+    printf("EM: ");
+    Octet_print(EM);
     
     if (EM->isError) {
         Octet_assignDescription(C, EM->description);
@@ -1006,6 +1067,8 @@ OctetString * Encryption(Int * n, Int * e, OctetString * M) {
     }
     
     Int * m = OS2IP(EM);
+    printf("EM: ");
+    Print(m);
     
     Int * c = RSAEP(n, e, m);
     if (c->isError) {
@@ -1013,7 +1076,13 @@ OctetString * Encryption(Int * n, Int * e, OctetString * M) {
         return C;
     }
     
+    printf("c: ");
+    Print(c);
+    
     C = I2OSP(c, k);
+    
+    printf("C");
+    Octet_print(C);
     return C;
 }
 
@@ -1050,5 +1119,10 @@ void test_EME() {
 
 
 int main(int argc, const char * argv[]) {
-    
+    Int * e = Convert(1234560);
+    Int * n = Convert(1324135456555633);
+    n = FastPower(n, Convert(2));
+    OctetString * str = I2OSP(Convert(255), 1);
+    Encryption(n, e, str);
+//    test_Int();
 }

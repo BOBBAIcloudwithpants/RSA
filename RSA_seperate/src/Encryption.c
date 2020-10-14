@@ -52,12 +52,15 @@ OctetString *I2OSP(Int *x, int x_len)
 
   Int *base256 = Convert(256);
   Int *zero = Convert(0);
-  if (Compare(x, FastPower(base256, Convert(x_len))) >= 0)
+  Int *threshold = FastPower(base256, Convert(x_len));
+
+  if (Compare(x, threshold) >= 0)
   {
     Octet_assignDescription(array, "integer too large\n");
+    Free(threshold);
     return array;
   }
-
+  Free(threshold);
   while (Compare(x, zero) != 0)
   {
     Int *mod = Mod(x, base256);
@@ -103,7 +106,7 @@ Int *OS2IP(OctetString *array)
 // (e, n) 为 接收者的 public key
 OctetString *Encryption(Int *n, Int *e, OctetString *M)
 {
-  int k = Size(n);
+  int k = Octet_Size(n);
   OctetString *C = Octet_init(k);
 
   OctetString *EM = EME_Encoding(M, k);

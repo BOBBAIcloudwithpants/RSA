@@ -200,3 +200,27 @@ long long GetInt(Int *a)
   }
   return ret;
 }
+
+// 求这个整数在字节串下的长度
+int Octet_Size(Int *x)
+{
+  Int *zero = Convert(0);
+  Int *base256 = Convert(256);
+  int ret = 0;
+  Int *a = Copy(x);
+
+  if (Compare(a, zero) == 0)
+  {
+    free(a);
+    return 1;
+  }
+
+  while (Compare(a, zero) != 0)
+  {
+    ret++;
+    Int *t = a;
+    a = Div(a, base256);
+    Free(t);
+  }
+  return ret;
+}

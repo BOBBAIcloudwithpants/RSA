@@ -89,4 +89,6 @@ Int *FastPower(Int *a, Int *times);
 // 将 Int 转换为 long long
 long long GetInt(Int *a);
 
+int Octet_Size(Int *a);
+
 #endif
