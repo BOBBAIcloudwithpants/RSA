@@ -88,4 +88,6 @@ Node *divide(Node *a, Node *b);
 // c = a mod b
 Node *mod(Node *a, Node *b);
 
+Node *convert_str_to_list(const char *a);
+
 #endif

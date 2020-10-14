@@ -80,6 +80,8 @@ int IsError(Int *a);
 // 比较 a, b; a<b 则返回-1，a==b则返回0，a>b则返回1
 int Compare(Int *a, Int *b);
 
+Int *Convert_String_To_Int(char *str);
+
 // 判断a是否为奇数
 int IsOdd(Int *a);
 

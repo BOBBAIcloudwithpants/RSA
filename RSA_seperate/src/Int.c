@@ -224,3 +224,18 @@ int Octet_Size(Int *x)
   }
   return ret;
 }
+
+Int *ProduceKRandom(int k)
+{
+  char *str[k + 1];
+  srand(time(NULL));
+  for (int i = 0; i < k; i++)
+  {
+    int num = rand() % 10;
+    if (num == 0 && i == 0)
+    {
+      num = 9;
+    }
+    str[i] = '0' + num;
+  }
+}

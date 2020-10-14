@@ -13,14 +13,25 @@
 #define LEN 100
 
 typedef long long Integer;
+typedef int number;
+
+int first_prime_list[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
+    31, 37, 41, 43, 47, 53, 59, 61, 67,
+    71, 73, 79, 83, 89, 97, 101, 103,
+    107, 109, 113, 127, 131, 137, 139,
+    149, 151, 157, 163, 167, 173, 179,
+    181, 191, 193, 197, 199, 211, 223,
+    227, 229, 233, 239, 241, 251, 257,
+    263, 269, 271, 277, 281, 283, 293,
+    307, 311, 313, 317, 331, 337, 347, 349};
 
 typedef struct Node {
-    int val;
+    number val;
     struct Node * next;
 } Node;
 
 // 初始化一个链表的节点
-Node* init(int a) {
+Node* init(number a) {
     Node * n = (Node *)malloc(sizeof(Node));
     n->val = a;
     n->next = NULL;
@@ -39,7 +50,7 @@ void list_free(Node * head) {
 }
 
 // 将值a放到链表的末尾
-void push_val(Node* t, int a) {
+void push_val(Node* t, number a) {
     Node * p = init(a);
     Node * q = t;
     while(q->next) {
@@ -104,7 +115,7 @@ Node * end(Node * t) {
 }
 
 // 将一个值插入 pos 位置
-void insert_val(Node * t, int val, int pos) {
+void insert_val(Node * t, number val, int pos) {
     Node* tmp = t->next;
     Node* prev = t;
     
@@ -183,17 +194,17 @@ Node * plus_list(Node * l1, Node * l2) {
     
     Node * p1 = a->next;
     Node * p2 = b->next;
-    int c1 = 0;
+    number c1 = 0;
     Node * c = init(-1);
     Node * p3 = c;
     
     while(p1 != NULL && p2 != NULL) {
-        int temp = c1 + p1->val + p2->val;
-            c1 = temp / 10;
-            c->next = init(temp % 10);
-            c = c->next;
-            p1 = p1->next;
-            p2 = p2->next;
+        number temp = c1 + p1->val + p2->val;
+        c1 = temp / 10;
+        c->next = init(temp % 10);
+        c = c->next;
+        p1 = p1->next;
+        p2 = p2->next;
     }
     
     if (p1 == NULL && p2 == NULL && c1) {
@@ -206,12 +217,12 @@ Node * plus_list(Node * l1, Node * l2) {
             s = p2;
         }
         while (s) {
-            int temp = s->val + c1;
+            number temp = s->val + c1;
             
-                c->next = init(temp % 10);
-                c1 = temp / 10;
-                c = c->next;
-                s = s->next;
+            c->next = init(temp % 10);
+            c1 = temp / 10;
+            c = c->next;
+            s = s->next;
         }
     }
     
@@ -231,43 +242,43 @@ Node * minus_list(Node * l1, Node * l2) {
     
     Node * p1 = a->next;
     Node * p2 = b->next;
-    int c1 = 0;
+    number c1 = 0;
     Node * c = init(-1);
     Node * p3 = c;
     
     while(p1 != NULL && p2 != NULL) {
-        int temp = c1 + p1->val - p2->val;
+        number temp = c1 + p1->val - p2->val;
         if (temp <  0) {
             temp += 10;
             c1 = -1;
         } else {
             c1 = 0;
         }
-            c->next = init(temp % 10);
-            c = c->next;
-            p1 = p1->next;
-            p2 = p2->next;
+        c->next = init(temp % 10);
+        c = c->next;
+        p1 = p1->next;
+        p2 = p2->next;
     }
     
-        Node * s = NULL;
-        if(p1 != NULL) {
-            s = p1;
-        } else if(p2 != NULL) {
-            s = p2;
+    Node * s = NULL;
+    if(p1 != NULL) {
+        s = p1;
+    } else if(p2 != NULL) {
+        s = p2;
+    }
+    while (s) {
+        number temp = s->val + c1;
+        if(temp < 0) {
+            temp += 10;
+            c1 = -1;
+            
+        } else {
+            c1 = 0;
         }
-        while (s) {
-            int temp = s->val + c1;
-            if(temp < 0) {
-                temp += 10;
-                c1 = -1;
-                
-            } else {
-                c1 = 0;
-            }
-            c->next = init(temp % 10);
-            c = c->next;
-            s = s->next;
-        }
+        c->next = init(temp % 10);
+        c = c->next;
+        s = s->next;
+    }
     
     Node * rev = reverse(p3);
     list_free(p3);
@@ -326,6 +337,16 @@ Node * convert_int_to_list(long long num) {
     Node * ret = reverse(p);
     list_free(p);
     return ret;
+}
+
+Node * convert_str_to_list (const char * a) {
+    Node * h = init(-1);
+    Node * p = h;
+    for (int i = 0;i<strlen(a);i++) {
+        p->next = init(a[i] - '0');
+        p = p->next;
+    }
+    return h;
 }
 
 // 比较a，b对应的整数的大小，如果a < b, 返回-1; 如果 a == b, 返回0；如果 a > b, 返回1
@@ -388,7 +409,7 @@ void print(Node * head) {
         p1 = p1->next;
     }
     printf("\n");
- 
+    
 }
 
 // a * b
@@ -437,18 +458,18 @@ Node * divide(Node * a, Node * b, int start) {
     Node * outcome = init(-1);
     Node * p_out = outcome;
     
-//    // 若 a < b, 直接返回0
+    //    // 若 a < b, 直接返回0
     if(compare(a, b) == -1) {
         outcome->next = init(0);
         return outcome;
     }
-
-//    // 若 a == b, 直接返回1
+    
+    //    // 若 a == b, 直接返回1
     if(compare(a, b) == 0) {
         outcome->next = init(1);
         return outcome;
     }
-
+    
     if(size(a)<=start) {
         outcome->next = init(0);
         return outcome;
@@ -535,7 +556,7 @@ Node * divide(Node * a, Node * b, int start) {
         Node * sub_outcome = divide(next_sub, b, start);
         Node * end_out = end(outcome);
         end_out->next = sub_outcome->next;
-//        remove_extra_0(outcome);
+        //        remove_extra_0(outcome);
         return outcome;
     }
 }
@@ -562,19 +583,19 @@ Integer power_of(Integer x, int times) {
 }
 
 /* Int 结构体的定义以及相关的方法
-    
+ 
  example:
-    1. 45123   =>   -1 -> 4 -> 5 -> 1 -> 2 -> 3 -> NULL
-    2. 空       =>  -1 -> NULL
+ 1. 45123   =>   -1 -> 4 -> 5 -> 1 -> 2 -> 3 -> NULL
+ 2. 空       =>  -1 -> NULL
  
  operation:
-    1. Plus
-    2. Minus
-    3. Product
-    4. Div
-    5. Mod
-    6. Compare
-*/
+ 1. Plus
+ 2. Minus
+ 3. Product
+ 4. Div
+ 5. Mod
+ 6. Compare
+ */
 typedef struct {
     
     // 用链表来实现大整数
@@ -717,17 +738,17 @@ Int * FastPower(Int * a, Int * times) {
         return Convert(1);
     }
     
-    printf("num: ");
-    Print(a);
+    //    printf("num: ");
+    //    Print(a);
+    //
+    //    printf("times: ");
+    //    Print(times);
+    //
+    //    printf("\n");
     
-    printf("times: ");
-    Print(times);
-    
-    printf("\n");
-    
-//    if (Compare(times, one) == 0) {
-//        return Copy(a);
-//    }
+    //    if (Compare(times, one) == 0) {
+    //        return Copy(a);
+    //    }
     
     
     
@@ -769,34 +790,56 @@ long long GetInt(Int * a) {
     return ret;
 }
 
+
 // 求这个整数在字节串下的长度
 int Octet_Size(Int *x)
 {
-  Int * zero = Convert(0);
-  Int * base256 = Convert(256);
-  int ret = 0;
-  Int * a = Copy(x);
-  
+    Int * zero = Convert(0);
+    Int * base256 = Convert(256);
+    int ret = 0;
+    Int * a = Copy(x);
+    
     if (Compare(a, zero) == 0) {
         free(a);
         return 1;
     }
-
-  while (Compare(a, zero) != 0)
-  {
-      Print(a);
-    ret++;
-    Int *t = a;
-    a = Div(a, base256);
-      
-    Free(t);
-  }
-  return ret;
+    
+    while (Compare(a, zero) != 0)
+    {
+        Print(a);
+        ret++;
+        Int *t = a;
+        a = Div(a, base256);
+        
+        Free(t);
+    }
+    return ret;
 }
 
 
+Int * Convert_String_To_Int(char * str) {
+    Node * h = convert_str_to_list(str);
+    Int * ret = Int_init();
+    Int_set_list(ret, h);
+    return ret;
+}
+
+
+Int * ProduceKRandom(int k) {
+    char str[k+1];
+    srand(time(NULL));
+    for(int i = 0;i<k;i++) {
+        int num = rand()%10;
+        if(num == 0 && i == 0) {
+            num = 9;
+        }
+        str[i] = '0'+num;
+    }
+    return Convert_String_To_Int(str);
+}
+
 void test_Int() {
-    Int * a = Convert(24);
+    Int * a = Convert_String_To_Int("54054560454512315097890798465465456987980541054087098705105456046513231326507489700984654654");
     Int * b = Convert(20);
     
     printf("a: ");
@@ -811,7 +854,7 @@ void test_Int() {
     
     printf("\n a * b: ");
     Print(Product(a, b));
-        
+    
     printf("\n a / b: ");
     Print(Div(a, b));
     
@@ -821,13 +864,16 @@ void test_Int() {
     
     printf("\n a mod b: ");
     Print(Mod(a, b));
-
+    
     printf("\n a ^ a: ");
-    Print(FastPower(a, Convert(200)));
+    Print(FastPower(a, Convert(100)));
+    
+    printf("\n convert: ");
+    Print(Convert_String_To_Int("123453245246243512"));
     
     printf("\n octet_size a: %d", Octet_Size(a));
     
-
+    
 }
 
 /*  Array 结构体的定义以及相关的方法  */
@@ -844,7 +890,7 @@ OctetString * Octet_init(int len) {
     
     OctetString * arr = (OctetString *)malloc(sizeof(OctetString));
     arr->arr = (int*)malloc(sizeof(int) * len);
-
+    
     arr->len = len;
     arr->pos = 0;
     arr->isError = 0;
@@ -907,10 +953,10 @@ void Octet_print(OctetString * array) {
         
     } else {
         printf("[ ");
-            for (int i = 0;i<Octet_size(array);i++) {
-                printf("%d ", Octet_getValByIndex(array, i));
-            }
-            printf("]\n");
+        for (int i = 0;i<Octet_size(array);i++) {
+            printf("%d ", Octet_getValByIndex(array, i));
+        }
+        printf("]\n");
     }
 }
 
@@ -947,13 +993,24 @@ OctetString * Octet_generatePS(int length) {
 
 
 Int * RSAEP(Int * n, Int * e, Int * M) {
+    printf("RSAEP: \nM: ");
+    Print(M);
+    printf("n: ");
+    Print(n);
+    printf("e: ");
+    Print(e);
+    
     Int * ret = Int_init();
     if(Compare(M, n) >= 0) {
         SetError(ret);
         return ret;
     }
     Int * Me = FastPower(M, e);
+    printf("\nMe: ");
+    Print(Me);
+    
     ret = Mod(Me, n);
+    
     Free(Me);
     return ret;
 }
@@ -985,6 +1042,27 @@ OctetString * EME_Encoding(OctetString * M, int k) {
         Octet_appendVal(EM, M->arr[i]);
     }
     return EM;
+}
+
+OctetString * EME_decoding(OctetString * EM) {
+    OctetString * ret = Octet_init(1);
+    int ps_pos = EM->pos-1;
+    int ps_len = ps_pos - 2;
+    while(ps_pos > 1 && EM->arr[ps_pos] != 0) {
+        ps_pos--;
+    }
+    if (EM->arr[0] != 0 || EM->arr[1] != 2 || ps_pos <= 1 || ps_len < 8) {
+        Octet_assignDescription(ret, "decryption error");
+        return ret;
+    }
+    
+    int m_len = EM->len - ps_len - 2;
+    OctetString * M = Octet_init(m_len);
+    for(int i = 0;i<m_len;i++) {
+        Octet_appendVal(M, EM->arr[ps_pos+i+1]);
+    }
+    
+    return M;
 }
 
 
@@ -1026,10 +1104,14 @@ Int * OS2IP (OctetString * array) {
     for (int i = array->pos - 1;i >= 0;i--) {
         
         Int * t = num;
-        Int * power_256 = Power(base256, i);
-        Int * c = Product_with_num(power_256, arr[array->pos - 1 - i]);
+        Int * ii = Convert(i);
+        Int * power_256 = FastPower(base256, ii);
+        int bit = arr[array->pos - 1 - i];
+        Int * c = Product_with_num(power_256, bit);
         num = Plus(num, c);
         
+        Print(num);
+        Free(ii);
         Free(t);
         Free(power_256);
         Free(c);
@@ -1055,11 +1137,16 @@ OctetString * Encryption(Int * n, Int * e, OctetString * M) {
     Octet_print(M);
     OctetString * C = Octet_init(k);
     
-    
     OctetString * EM = EME_Encoding(M, k);
+    
+    OctetString * REM = EME_decoding(EM);
+    
     
     printf("EM: ");
     Octet_print(EM);
+    
+    printf("REM: ");
+    Octet_print(REM);
     
     if (EM->isError) {
         Octet_assignDescription(C, EM->description);
@@ -1067,7 +1154,7 @@ OctetString * Encryption(Int * n, Int * e, OctetString * M) {
     }
     
     Int * m = OS2IP(EM);
-    printf("EM: ");
+    printf("m: ");
     Print(m);
     
     Int * c = RSAEP(n, e, m);
@@ -1083,9 +1170,59 @@ OctetString * Encryption(Int * n, Int * e, OctetString * M) {
     
     printf("C");
     Octet_print(C);
+    
+    printf("recovery: ");
+    Print(OS2IP(C));
     return C;
 }
 
+
+Int * RSADP(Int * n, Int * d, Int * c) {
+    
+    Int * ret = Int_init();
+    
+    // c >= n-1, 返回ciphertext representative out of range
+    if(Compare(n-1, c) <= 0) {
+        ret->isError = 1;
+        return ret;
+    }
+    
+    Int * cd = FastPower(c, d);
+    ret = Mod(cd, n);
+    Free(cd);
+    
+    return ret;
+}
+
+
+// (n, d) 为接收者的私钥，C为密文
+OctetString * Decryption(Int * n, Int * d, OctetString * C) {
+    OctetString * s = Octet_init(2);
+    
+    int k = Octet_Size(n);
+    int lenC = C->len;
+    
+    
+    if (k != lenC) {
+        Octet_assignDescription(s, "decryption error");
+        return s;
+    }
+    
+    Int * c = OS2IP(C);
+    
+    Int * m = RSADP(n, d, c);
+    
+    if (m->isError) {
+        Octet_assignDescription(s, "ciphertext representative out of range");
+        return s;
+    }
+    
+    OctetString * EM = I2OSP(m, k);
+    OctetString * M = EME_decoding(EM);
+    
+    return M;
+    
+}
 
 
 void test_I2OSP() {
@@ -1116,13 +1253,161 @@ void test_EME() {
     Octet_print(pad);
 }
 
+// returns (x^y) % p
+Int * power(Int * x,Int * y, Int * p)
+{
+    
+    Int * res = Convert(1);      // Initialize result
+    x = Mod(x, p);  // Update x if it is more than or
+    // equal to p
+    
+    while (Compare(y, Convert(0)) > 0)
+    {
+        // If y is odd, multiply x with result
+        if (IsOdd(y)){
+            
+            Int * res_x = Product(res, x);
+            res = Mod(res_x, p);
+        }
+        
+        // y must be even now
+        
+        y = Div(y, Convert(2));
+        
+        // y = y/2
+        Int * x_x = FastPower(x, Convert(2));
+        
+        // x = x^2 % p
+        x = Mod(x_x, p);
+        
+        }
+    return res;
+}
+
+// This function is called for all k trials. It returns
+// false if n is composite and returns false if n is
+// probably prime.
+// d is an odd number such that  d*2<sup>r</sup> = n-1
+// for some r >= 1
+int miillerTest(Int * d, Int * n)
+{
+    // Pick a random number in [2..n-2]
+    // Corner cases make sure that n > 4
+    
+    Int * rand_num = Convert(rand());
+    Int * mod_num = Minus(n, Convert(4));
+    Int * mod_rand_num = Mod(rand_num, mod_num);
+    Int * a =Plus(Convert(2), mod_rand_num);
+    
+    // Compute a^d % n
+    Int * copy_d = Copy(d);
+    
+    Int * x = power(a, copy_d, n);
+    
+    Int * n_1 = Minus(n, Convert(1));
+    // x == 1 || x == n - 1
+    if (Compare(x, Convert(1)) == 0 ||Compare(x, n_1) == 0)
+        return 1;
+    
+    // Keep squaring x while one of the following doesn't
+    // happen
+    // (i)   d does not reach n-1
+    // (ii)  (x^2) % n is not 1
+    // (iii) (x^2) % n is not n-1
+    
+    // d != n-1
+    while (Compare(d, n_1) != 0)
+    {
+        Int * x_x = FastPower(x, Convert(2));
+        
+        // x = x^2 %n
+        x = Mod(x_x, n);
+        
+        
+        
+        d = Product(d, Convert(2));
+        
+        // x == 1
+        if (Compare(x, Convert(1)) == 0)
+            return 0;
+        
+        
+        if (Compare(x, n_1) == 0)
+            return 1;
+    }
+    
+    // Return composite
+    return 0;
+}
+
+int isPrime(Int * n, int k) {
+    // Corner cases
+    if (Compare(n, Convert(1)) <= 0 || Compare(n, Convert(4)) == 0)
+        return 0;
+    if (Compare(n, Convert(3)) ==0) return 1;
+    
+    // Find r such that n = 2^d * r + 1 for some r >= 1
+    Int * n_1 = Minus(n, Convert(1));
+    Int * d = Copy(n_1);
+    while (!IsOdd(d)){
+        // d /= 2
+        d =Div(d, Convert(2));
+    }
+    
+    
+    // Iterate given nber of 'k' times
+    for (int i = 0; i < k; i++)
+    if (!miillerTest(d, n))
+        return 0;
+    
+    return 1;
+}
+
+int LowLevelTest(Int * num) {
+    for(int i = 0;i<60;i++) {
+        Int * div_num = Convert(first_prime_list[i]);
+        
+        Int * div_res = Mod(num, div_num);
+        
+        // 能够整除
+        if (Compare(num, div_num) != 0 && Compare(div_res, Convert(0)) == 0) {
+            return 0;
+        }
+        
+    }
+    return 1;
+    
+}
+
+
+Int * BigPrime(int k) {
+    while (1) {
+        Int * num = ProduceKRandom(k);
+        if(LowLevelTest(num) && isPrime(num, 4)) {
+            return num;
+        }
+    }
+}
+
+
+void Test_isPrime() {
+    Int * a = Convert(255);
+    Int * b = Convert(42);
+    Int * c = Convert(31);
+    printf("a: %d, b: %d c: %d", isPrime(a, 4), isPrime(b, 4), LowLevelTest(c));
+    
+}
 
 
 int main(int argc, const char * argv[]) {
-    Int * e = Convert(1234560);
-    Int * n = Convert(1324135456555633);
-    n = FastPower(n, Convert(2));
-    OctetString * str = I2OSP(Convert(255), 1);
-    Encryption(n, e, str);
-//    test_Int();
+        Int * e = Convert(898);
+        Int * n = Convert(1324135456555633);
+        n = FastPower(n, Convert(2));
+        OctetString * str = I2OSP(Convert(97), 1);
+        Encryption(n, e, str);
+//        test_Int();
+//    for (int i = 0;i<5;i++) {
+//        Int * n = BigPrime(10);
+//        Print(n);
+//    }
 }

@@ -590,3 +590,15 @@ Node *mod(Node *a, Node *b)
   Node *div = divide(a, b);
   return minus_list(a, product(b, div));
 }
+
+Node *convert_str_to_list(const char *a)
+{
+  Node *h = init(-1);
+  Node *p = h;
+  for (int i = 0; i < strlen(a); i++)
+  {
+    p->next = init(a[i] - '0');
+    p = p->next;
+  }
+  return h;
+}
